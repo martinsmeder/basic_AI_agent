@@ -4,6 +4,8 @@ import { stdin as input, stdout as output } from "node:process";
 import readline from "node:readline/promises";
 
 import { newAgent } from "./agent.js";
+import { editFileTool } from "./tools/edit_file.js";
+import { listFilesTool } from "./tools/list_files.js";
 import { readFileTool } from "./tools/read_file.js";
 
 // Set up the SDK client and terminal input, then start the agent.
@@ -20,7 +22,7 @@ async function main() {
     }
   };
 
-  const tools = [readFileTool];
+  const tools = [readFileTool, listFilesTool, editFileTool];
   const agent = newAgent(ai, getUserMessage, tools);
 
   try {
