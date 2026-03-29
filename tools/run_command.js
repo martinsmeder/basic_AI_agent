@@ -10,7 +10,7 @@ const DEFAULT_TIMEOUT_MS = 10_000;
 export const runCommandTool = {
   name: "run_command",
   description:
-    "Run a shell command in the current working directory. Use this for tests, builds, linters, or other project commands. Returns stdout, stderr, and the exit code.",
+    "Run a shell command in the current working directory. Use this for tests, builds, linters, or other project commands. Returns stdout, stderr, and the exit code in JSON format.",
   parameters: {
     type: "object",
     properties: {
