@@ -7,6 +7,8 @@ import { newAgent } from "./agent.js";
 import { editFileTool } from "./tools/edit_file.js";
 import { listFilesTool } from "./tools/list_files.js";
 import { readFileTool } from "./tools/read_file.js";
+import { runCommandTool } from "./tools/run_command.js";
+import { searchFilesTool } from "./tools/search_files.js";
 
 // Set up the SDK client and terminal input, then start the agent.
 async function main() {
@@ -22,7 +24,13 @@ async function main() {
     }
   };
 
-  const tools = [readFileTool, listFilesTool, editFileTool];
+  const tools = [
+    readFileTool,
+    listFilesTool,
+    editFileTool,
+    searchFilesTool,
+    runCommandTool,
+  ];
   const agent = newAgent(ai, getUserMessage, tools);
 
   try {
