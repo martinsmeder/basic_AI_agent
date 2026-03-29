@@ -1,4 +1,3 @@
-import { Type } from "@google/genai";
 import { execFile } from "node:child_process";
 import { cwd } from "node:process";
 import { promisify } from "node:util";
@@ -6,21 +5,21 @@ import { promisify } from "node:util";
 const execFileAsync = promisify(execFile);
 const DEFAULT_TIMEOUT_MS = 10_000;
 
-// Define the tool in one object so we can both advertise it to Gemini
-// and execute it locally when Gemini asks for it.
+// Define the tool in one object so we can both advertise it to the model
+// and execute it locally when the model asks for it.
 export const runCommandTool = {
   name: "run_command",
   description:
     "Run a shell command in the current working directory. Use this for tests, builds, linters, or other project commands. Returns stdout, stderr, and the exit code.",
   parameters: {
-    type: Type.OBJECT,
+    type: "object",
     properties: {
       command: {
-        type: Type.STRING,
+        type: "string",
         description: "The shell command to run.",
       },
       timeout_ms: {
-        type: Type.INTEGER,
+        type: "integer",
         description:
           "Optional timeout in milliseconds. Defaults to 10000 if not provided.",
       },

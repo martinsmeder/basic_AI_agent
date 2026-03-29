@@ -1,10 +1,9 @@
-import { Type } from "@google/genai";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { cwd } from "node:process";
 import path from "node:path";
 
-// Define the tool in one object so we can both advertise it to Gemini
-// and execute it locally when Gemini asks for it.
+// Define the tool in one object so we can both advertise it to the model
+// and execute it locally when the model asks for it.
 export const editFileTool = {
   name: "edit_file",
   description: `Make edits to a text file.
@@ -14,19 +13,19 @@ Replaces 'old_str' with 'new_str' in the given file. 'old_str' and 'new_str' MUS
 If the file specified with path doesn't exist, it will be created when 'old_str' is an empty string.
 `,
   parameters: {
-    type: Type.OBJECT,
+    type: "object",
     properties: {
       path: {
-        type: Type.STRING,
+        type: "string",
         description: "The relative path to the file.",
       },
       old_str: {
-        type: Type.STRING,
+        type: "string",
         description:
           "Text to search for. It must match exactly in the file content.",
       },
       new_str: {
-        type: Type.STRING,
+        type: "string",
         description: "Text to replace old_str with.",
       },
     },

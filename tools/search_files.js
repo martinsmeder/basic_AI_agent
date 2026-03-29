@@ -1,4 +1,3 @@
-import { Type } from "@google/genai";
 import { execFile } from "node:child_process";
 import { cwd } from "node:process";
 import { promisify } from "node:util";
@@ -6,21 +5,21 @@ import path from "node:path";
 
 const execFileAsync = promisify(execFile);
 
-// Define the tool in one object so we can both advertise it to Gemini
-// and execute it locally when Gemini asks for it.
+// Define the tool in one object so we can both advertise it to the model
+// and execute it locally when the model asks for it.
 export const searchFilesTool = {
   name: "search_files",
   description:
-    "Search for text in files at a given relative path. Use this to find code, identifiers, or exact text across the project. If no path is provided, search from the current directory.",
+    "Search for text in files at a given relative path. Use this to find code, identifiers, function names, variable names, routes, or exact text across the project. Use this when the user asks where something is defined, referenced, implemented, or used. If no path is provided, search from the current directory.",
   parameters: {
-    type: Type.OBJECT,
+    type: "object",
     properties: {
       query: {
-        type: Type.STRING,
+        type: "string",
         description: "The text or pattern to search for.",
       },
       path: {
-        type: Type.STRING,
+        type: "string",
         description:
           "Optional relative path to search from. Defaults to the current directory if not provided.",
       },

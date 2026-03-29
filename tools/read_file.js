@@ -1,19 +1,18 @@
-import { Type } from "@google/genai";
 import { readFile } from "node:fs/promises";
 import { cwd } from "node:process";
 import path from "node:path";
 
-// Define the tool in one object so we can both advertise it to Gemini
-// and execute it locally when Gemini asks for it.
+// Define the tool in one object so we can both advertise it to the model
+// and execute it locally when the model asks for it.
 export const readFileTool = {
   name: "read_file",
   description:
-    "Read the contents of a given relative file path. Use this when you want to see what's inside a file. Do not use this with directory names.",
+    "Read the contents of a given relative file path. Use this when you want to inspect the exact implementation in a file, especially after search_files finds a likely match. Do not use this with directory names.",
   parameters: {
-    type: Type.OBJECT,
+    type: "object",
     properties: {
       path: {
-        type: Type.STRING,
+        type: "string",
         description: "The relative path of a file in the working directory.",
       },
     },

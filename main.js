@@ -1,7 +1,10 @@
-import { GoogleGenAI } from "@google/genai";
+import Groq from "groq-sdk";
 import "dotenv/config";
+import { readFile } from "node:fs/promises";
 import { stdin as input, stdout as output } from "node:process";
+import path from "node:path";
 import readline from "node:readline/promises";
+import { fileURLToPath } from "node:url";
 
 import { newAgent } from "./agent.js";
 import { editFileTool } from "./tools/edit_file.js";
@@ -12,8 +15,9 @@ import { searchFilesTool } from "./tools/search_files.js";
 
 // Set up the SDK client and terminal input, then start the agent.
 async function main() {
-  const ai = new GoogleGenAI({});
+  const ai = new Groq({ apiKey: process.env.GROQ_API_KEY });
   const rl = readline.createInterface({ input, output });
+  const systemInstruction = await loadSystemInstruction();
 
   // Get user message from the terminal
   const getUserMessage = async () => {
@@ -31,7 +35,7 @@ async function main() {
     searchFilesTool,
     runCommandTool,
   ];
-  const agent = newAgent(ai, getUserMessage, tools);
+  const agent = newAgent(ai, getUserMessage, tools, systemInstruction);
 
   try {
     await agent.run();
@@ -40,6 +44,15 @@ async function main() {
   } finally {
     rl.close();
   }
+}
+
+// Load the tool-use skill so we can send it as the system instruction.
+async function loadSystemInstruction() {
+  const currentFilePath = fileURLToPath(import.meta.url);
+  const currentDirectory = path.dirname(currentFilePath);
+  const skillPath = path.join(currentDirectory, "skills", "tool_use.md");
+
+  return readFile(skillPath, "utf8");
 }
 
 await main();
