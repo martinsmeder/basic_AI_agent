@@ -13,7 +13,7 @@ async function main() {
   const ai = new GoogleGenAI({});
   const rl = readline.createInterface({ input, output });
 
-  // Read one line from the terminal each time the agent asks for input.
+  // Get user message from the terminal
   const getUserMessage = async () => {
     try {
       return await rl.question("\u001b[94mYou\u001b[0m: ");
