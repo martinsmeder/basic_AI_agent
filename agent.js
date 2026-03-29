@@ -9,14 +9,14 @@ export function newAgent(client, getUserMessage, tools) {
     client,
     getUserMessage,
     tools,
+    toolDeclarations: tools.map((tool) => ({
+      name: tool.name,
+      description: tool.description,
+      parameters: tool.parameters,
+    })),
+    toolsByName: new Map(tools.map((tool) => [tool.name, tool])),
     run() {
       return runAgent(this);
-    },
-    runInference(conversation) {
-      return runInference(this, conversation);
-    },
-    executeFunctionCall(functionCall) {
-      return executeFunctionCall(this, functionCall);
     },
   };
 }
@@ -39,13 +39,10 @@ async function runAgent(agent) {
         break;
       }
 
-      conversation.push({
-        role: "user",
-        parts: [{ text: userInput }],
-      });
+      conversation.push(createUserTextMessage(userInput));
     }
 
-    const response = await agent.runInference(conversation);
+    const response = await runInference(agent, conversation);
     const modelContent = response.candidates?.[0]?.content;
 
     if (!modelContent) {
@@ -69,8 +66,7 @@ async function runAgent(agent) {
     const functionResponseParts = [];
 
     for (const functionCall of functionCalls) {
-      const functionResponsePart =
-        await agent.executeFunctionCall(functionCall);
+      const functionResponsePart = await executeFunctionCall(agent, functionCall);
       functionResponseParts.push(functionResponsePart);
     }
 
@@ -92,11 +88,7 @@ async function runInference(agent, conversation) {
       maxOutputTokens: 1024,
       tools: [
         {
-          functionDeclarations: agent.tools.map((tool) => ({
-            name: tool.name,
-            description: tool.description,
-            parameters: tool.parameters,
-          })),
+          functionDeclarations: agent.toolDeclarations,
         },
       ],
       toolConfig: {
@@ -111,20 +103,14 @@ async function runInference(agent, conversation) {
 // Look up the requested tool, execute it, and package the result
 // in the function-response format Gemini expects on the next turn.
 async function executeFunctionCall(agent, functionCall) {
-  const tool = agent.tools.find(
-    (candidate) => candidate.name === functionCall.name,
-  );
+  const tool = agent.toolsByName.get(functionCall.name);
 
   if (!tool) {
-    return {
-      functionResponse: {
-        id: functionCall.id,
-        name: functionCall.name,
-        response: {
-          error: `Tool not found: ${functionCall.name}`,
-        },
-      },
-    };
+    return createFunctionResponsePart(
+      functionCall.id,
+      functionCall.name,
+      { error: `Tool not found: ${functionCall.name}` },
+    );
   }
 
   const args = functionCall.args ?? {};
@@ -132,25 +118,29 @@ async function executeFunctionCall(agent, functionCall) {
 
   try {
     const output = await tool.execute(args);
-
-    return {
-      functionResponse: {
-        id: functionCall.id,
-        name: tool.name,
-        response: {
-          output,
-        },
-      },
-    };
+    return createFunctionResponsePart(functionCall.id, tool.name, { output });
   } catch (error) {
-    return {
-      functionResponse: {
-        id: functionCall.id,
-        name: tool.name,
-        response: {
-          error: error.message,
-        },
-      },
-    };
+    return createFunctionResponsePart(functionCall.id, tool.name, {
+      error: error.message,
+    });
   }
+}
+
+// Build a standard user text message for the conversation history.
+function createUserTextMessage(text) {
+  return {
+    role: "user",
+    parts: [{ text }],
+  };
+}
+
+// Build the function-response part shape Gemini expects on the next turn.
+function createFunctionResponsePart(id, name, response) {
+  return {
+    functionResponse: {
+      id,
+      name,
+      response,
+    },
+  };
 }
